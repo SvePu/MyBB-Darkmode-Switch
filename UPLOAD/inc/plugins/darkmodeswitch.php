@@ -21,7 +21,11 @@ if (defined('THIS_SCRIPT'))
     }
 }
 
-if (!defined('IN_ADMINCP'))
+if (defined('IN_ADMINCP'))
+{
+    $plugins->add_hook('admin_config_settings_begin', 'darkmodeswitch_settings');
+}
+else
 {
     $plugins->add_hook('usercp_options_end', 'darkmodeswitch_usercp_options');
     $plugins->add_hook('usercp_do_options_end', 'darkmodeswitch_usercp_do_options');
@@ -30,9 +34,12 @@ if (!defined('IN_ADMINCP'))
 
 function darkmodeswitch_info()
 {
+    global $db, $lang;
+    $lang->load('darkmodeswitch', true);
+
     return array(
         'name'          => 'MyBB Darkmode Switch',
-        'description'   => 'Include a setting into UserCP to switch dark mode CSS files in forum',
+        'description'   => $db->escape_string($lang->darkmodeswitch_desc),
         'website'       => 'https://github.com/SvePu/MyBB-Darkmode-Switch',
         'author'        => 'SvePu',
         'authorsite'    => 'https://github.com/SvePu',
@@ -46,11 +53,13 @@ function darkmodeswitch_install()
 {
     global $db, $mybb;
 
+    /** Add DB Column */
     if (!$db->field_exists("darkmode", "users"))
     {
         $db->add_column("users", "darkmode", "tinyint(1) NOT NULL DEFAULT '0'");
     }
 
+    /** Add Templates */
     $templatearray = array(
         'usercp_options_darkmodeswitch' => '<tr>
 <td colspan="2"><span class="smalltext">{$lang->darkmode}</span></td>
@@ -89,6 +98,12 @@ function darkmodeswitch_install()
 
     foreach ($stylesheetarray as $name => $styles)
     {
+        $query = $db->simple_select('themestylesheets', 'sid', "name='{$name}' AND tid='{$tid}'");
+        if ($db->fetch_field($query, 'sid'))
+        {
+            continue;
+        }
+
         $stylesheet = array(
             'name' => $db->escape_string($name),
             'tid' => (int)$tid,
@@ -101,41 +116,97 @@ function darkmodeswitch_install()
         $sid = $db->insert_query("themestylesheets", $stylesheet);
 
         require_once MYBB_ROOT . $mybb->config['admin_dir'] . '/inc/functions_themes.php';
-
         if (!cache_stylesheet($stylesheet['tid'], $stylesheet['cachefile'], $stylesheet['stylesheet']))
         {
             $db->update_query("themestylesheets", array('cachefile' => "css.php?stylesheet={$sid}"), "sid='{$sid}'", 1);
         }
+
+        update_theme_stylesheet_list($tid, false, true);
     }
 
-    update_theme_stylesheet_list($tid, false, true);
+    /** Add Settings */
+    $query = $db->simple_select('settinggroups', 'gid', "name='general'");
+    $gid = (int)$db->fetch_field($query, 'gid');
+
+    $query = $db->simple_select('settings', 'COUNT(*) AS disporder', "gid='{$gid}'");
+    $disporder = (int)$db->fetch_field($query, 'disporder');
+
+    $settings = array(
+        'darkmodeselector' => array(
+            'optionscode' => 'yesno',
+            'value' => 1
+        ),
+        'autodarkmodeguests' => array(
+            'optionscode' => 'yesno',
+            'value' => 1,
+        )
+    );
+
+    ++$disporder;
+
+    foreach ($settings as $key => $setting)
+    {
+        $setting['name'] = $db->escape_string($key);
+
+        $lang_var_title = "setting_{$key}";
+        $lang_var_description = "setting_{$key}_desc";
+
+        $setting['title'] = $db->escape_string($lang->{$lang_var_title});
+        $setting['description'] = $db->escape_string($lang->{$lang_var_description});
+        $setting['disporder'] = $disporder;
+        $setting['gid'] = $gid;
+
+        $db->insert_query('settings', $setting);
+        ++$disporder;
+    }
+
+    rebuild_settings();
 }
 
 function darkmodeswitch_is_installed()
 {
-    global $db;
-    return $db->field_exists('darkmode', 'users');
+    global $mybb;
+    if (isset($mybb->settings['darkmodeselector']))
+    {
+        return true;
+    }
+    return false;
 }
 
 function darkmodeswitch_uninstall()
 {
-    global $db;
-    if ($db->field_exists('darkmode', 'users'))
+    global $db, $mybb;
+
+    if ($mybb->request_method != 'post')
     {
-        $db->drop_column('users', 'darkmode');
+        global $page, $lang;
+        $lang->load('darkmodeswitch', true);
+
+        $page->output_confirm_action('index.php?module=config-plugins&action=deactivate&uninstall=1&plugin=darkmodeswitch', $lang->darkmodeswitch_uninstall_message, $lang->darkmodeswitch_uninstall);
     }
 
     $db->delete_query('templates', "title IN ('usercp_options_darkmodeswitch')");
 
-    /** Remove Stylesheet */
-    require_once MYBB_ADMIN_DIR . "inc/functions_themes.php";
+    $db->delete_query("settings", "name IN ('darkmodeselector', 'autodarkmodeguests')");
+    rebuild_settings();
 
-    $db->delete_query("themestylesheets", "name IN ('darkmode.css', 'darkmode_auto.css')");
-
-    $query = $db->simple_select("themes", "tid");
-    while ($theme = $db->fetch_array($query))
+    if (!isset($mybb->input['no']))
     {
-        update_theme_stylesheet_list($theme['tid']);
+        /** Remove Stylesheet */
+        require_once MYBB_ADMIN_DIR . "inc/functions_themes.php";
+
+        $db->delete_query("themestylesheets", "name LIKE ('darkmode%')");
+
+        $query = $db->simple_select("themes", "tid");
+        while ($theme = $db->fetch_array($query))
+        {
+            update_theme_stylesheet_list($theme['tid']);
+        }
+
+        if ($db->field_exists('darkmode', 'users'))
+        {
+            $db->drop_column('users', 'darkmode');
+        }
     }
 }
 
@@ -151,9 +222,24 @@ function darkmodeswitch_deactivate()
     find_replace_templatesets('usercp_options', '#' . preg_quote("{\$board_darkmode}\n") . '#', '');
 }
 
+function darkmodeswitch_settings()
+{
+    global $lang;
+    $lang->load('darkmodeswitch', true);
+}
+
 function darkmodeswitch_usercp_options()
 {
-    global $lang, $templates, $user, $board_darkmode;
+    global $mybb, $board_darkmode;
+
+    $board_darkmode = '';
+
+    if ($mybb->settings['darkmodeselector'] != 1)
+    {
+        return;
+    }
+
+    global $lang, $templates, $user;
     $lang->load('darkmodeswitch');
 
     $dm_auto_selected = $dm_enabled_selected = $dm_disabled_selected = '';
@@ -188,40 +274,50 @@ function darkmodeswitch_global()
 {
     global $mybb, $theme, $stylesheets;
 
-    if (!isset($mybb->user['darkmode']) || (isset($mybb->user['darkmode']) && $mybb->user['darkmode'] == 0))
+    if ($mybb->settings['darkmodeselector'] != 1)
     {
         return;
     }
 
-    $sh_name = '';
-    switch ($mybb->user['darkmode'])
+    if (!$mybb->user['uid'] && $mybb->settings['autodarkmodeguests'] == 1)
     {
-        case 1:
-            $sh_name = 'darkmode.css';
-            break;
-        case 2:
-            $sh_name = 'darkmode_auto.css';
-            break;
+        $mybb->user['darkmode'] = 2;
     }
 
-    if ($mybb->settings['minifycss'])
+    if (isset($mybb->user['darkmode']))
     {
-        $sh_name = str_replace('.css', '.min.css', $sh_name);
+        $sh_name = '';
+        switch ($mybb->user['darkmode'])
+        {
+            case 1:
+                $sh_name = 'darkmode.css';
+                break;
+            case 2:
+                $sh_name = 'darkmode_auto.css';
+                break;
+            default:
+                return;
+        }
+
+        if ($mybb->settings['minifycss'])
+        {
+            $sh_name = str_replace('.css', '.min.css', $sh_name);
+        }
+
+        $sh_path = 'cache/themes/theme' . $theme['tid'] . '/' . $sh_name;
+
+        if (!file_exists(MYBB_ROOT . $sh_path))
+        {
+            $sh_path = 'cache/themes/theme1/' . $sh_name;
+        }
+
+        if (file_exists(MYBB_ROOT . $sh_path))
+        {
+            $sh_path .= "?t=" . filemtime(MYBB_ROOT . $sh_path);
+        }
+
+        $sh_url = $mybb->settings['bburl'] . '/' . $sh_path;
+
+        $stylesheets .= "<link type=\"text/css\" rel=\"stylesheet\" href=\"{$sh_url}\" />\n";
     }
-
-    $sh_path = 'cache/themes/theme' . $theme['tid'] . '/' . $sh_name;
-
-    if (!file_exists(MYBB_ROOT . $sh_path))
-    {
-        $sh_path = 'cache/themes/theme1/' . $sh_name;
-    }
-
-    if (file_exists(MYBB_ROOT . $sh_path))
-    {
-        $sh_path .= "?t=" . filemtime(MYBB_ROOT . $sh_path);
-    }
-
-    $sh_url = $mybb->settings['bburl'] . '/' . $sh_path;
-
-    $stylesheets .= "<link type=\"text/css\" rel=\"stylesheet\" href=\"{$sh_url}\" />\n";
 }
