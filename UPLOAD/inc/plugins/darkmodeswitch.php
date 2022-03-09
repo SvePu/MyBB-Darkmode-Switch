@@ -276,9 +276,10 @@ function darkmodeswitch_usercp_do_options()
 
 function darkmodeswitch_global()
 {
-    global $mybb, $theme, $stylesheets;
+    global $mybb, $theme;
 
-    $theme['icons'] = '';
+    $theme['icons'] = $theme['iconsscript'] = '';
+
     if ($mybb->settings['darkmodeselector'] != 1)
     {
         return;
@@ -291,14 +292,14 @@ function darkmodeswitch_global()
 
     if (isset($mybb->user['darkmode']))
     {
-        $sh_name = '';
+        $dm_stylesheet_name = '';
         switch ($mybb->user['darkmode'])
         {
             case 1:
-                $sh_name = 'darkmode.css';
+                $dm_stylesheet_name = 'darkmode.css';
                 break;
             case 2:
-                $sh_name = 'darkmode_auto.css';
+                $dm_stylesheet_name = 'darkmode_auto.css';
                 break;
             default:
                 return;
@@ -310,23 +311,24 @@ function darkmodeswitch_global()
 
         if ($mybb->settings['minifycss'])
         {
-            $sh_name = str_replace('.css', '.min.css', $sh_name);
+            $dm_stylesheet_name = str_replace('.css', '.min.css', $dm_stylesheet_name);
         }
 
-        $sh_path = 'cache/themes/theme' . $theme['tid'] . '/' . $sh_name;
+        $dm_stylesheet_path = 'cache/themes/theme' . $theme['tid'] . '/' . $dm_stylesheet_name;
 
-        if (!file_exists(MYBB_ROOT . $sh_path))
+        if (!file_exists(MYBB_ROOT . $dm_stylesheet_path))
         {
-            $sh_path = 'cache/themes/theme1/' . $sh_name;
+            $dm_stylesheet_path = 'cache/themes/theme1/' . $dm_stylesheet_name;
         }
 
-        if (file_exists(MYBB_ROOT . $sh_path))
+        if (file_exists(MYBB_ROOT . $dm_stylesheet_path))
         {
-            $sh_path .= "?t=" . filemtime(MYBB_ROOT . $sh_path);
+            $dm_stylesheet_path .= "?t=" . filemtime(MYBB_ROOT . $dm_stylesheet_path);
         }
 
-        $sh_url = $mybb->settings['bburl'] . '/' . $sh_path;
+        $dm_stylesheet_url = $mybb->settings['bburl'] . '/' . $dm_stylesheet_path;
 
-        $stylesheets .= "<link type=\"text/css\" rel=\"stylesheet\" href=\"{$sh_url}\" />\n";
+        global $stylesheets;
+        $stylesheets .= "<link type=\"text/css\" rel=\"stylesheet\" href=\"{$dm_stylesheet_url}\" />\n";
     }
 }
