@@ -56,7 +56,7 @@ function darkmodeswitch_install()
     /** Add DB Column */
     if (!$db->field_exists("darkmode", "users"))
     {
-        $db->add_column("users", "darkmode", "tinyint(1) NOT NULL DEFAULT '0'");
+        $db->add_column("users", "darkmode", "tinyint(1) NOT NULL DEFAULT '2'");
     }
 
     /** Add Templates */
