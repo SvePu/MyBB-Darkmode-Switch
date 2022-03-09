@@ -214,12 +214,16 @@ function darkmodeswitch_activate()
 {
     require_once MYBB_ROOT . 'inc/adminfunctions_templates.php';
     find_replace_templatesets('usercp_options', '#' . preg_quote('{$board_language}') . '#', "{\$board_darkmode}\n{\$board_language}");
+    find_replace_templatesets('codebuttons', '#' . preg_quote('<script type="text/javascript">') . '#', "{\$theme['iconsscript']}\n<script type=\"text/javascript\">");
+    find_replace_templatesets('codebuttons', '#' . preg_quote('format: "bbcode",') . '#', "format: \"bbcode\",{\$theme['icons']}");
 }
 
 function darkmodeswitch_deactivate()
 {
     require MYBB_ROOT . '/inc/adminfunctions_templates.php';
     find_replace_templatesets('usercp_options', '#' . preg_quote("{\$board_darkmode}\n") . '#', '');
+    find_replace_templatesets('codebuttons', '#' . preg_quote("{\$theme['iconsscript']}\n") . '#', '');
+    find_replace_templatesets('codebuttons', '#' . preg_quote("{\$theme['icons']}") . '#', '');
 }
 
 function darkmodeswitch_settings()
@@ -274,6 +278,7 @@ function darkmodeswitch_global()
 {
     global $mybb, $theme, $stylesheets;
 
+    $theme['icons'] = '';
     if ($mybb->settings['darkmodeselector'] != 1)
     {
         return;
@@ -298,6 +303,10 @@ function darkmodeswitch_global()
             default:
                 return;
         }
+
+        $theme['editortheme'] = 'darkmode.css';
+        $theme['icons'] = ' icons: "darkmode",';
+        $theme['iconsscript'] = '<script type="text/javascript" src="' . $mybb->settings['bburl'] . '/jscripts/sceditor/icons/darkmode.js?ver=' . $mybb->version_code . '"></script>';
 
         if ($mybb->settings['minifycss'])
         {
