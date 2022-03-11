@@ -296,16 +296,15 @@ function darkmodeswitch_global()
         switch ($mybb->user['darkmode'])
         {
             case 1:
-                $dm_stylesheet_name = 'darkmode.css';
+                $dm_stylesheet_name = $theme['editortheme'] = 'darkmode.css';
                 break;
             case 2:
-                $dm_stylesheet_name = 'darkmode_auto.css';
+                $dm_stylesheet_name = $theme['editortheme'] = 'darkmode_auto.css';
                 break;
             default:
                 return;
         }
 
-        $theme['editortheme'] = 'darkmode.css';
         $theme['icons'] = ' icons: "darkmode",';
         $theme['iconsscript'] = '<script type="text/javascript" src="' . $mybb->settings['bburl'] . '/jscripts/sceditor/icons/darkmode.js?ver=' . $mybb->version_code . '"></script>';
 
