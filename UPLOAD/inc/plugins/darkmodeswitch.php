@@ -92,7 +92,65 @@ function darkmodeswitch_install()
     $tid = 1;
 
     $stylesheetarray = array(
-        'darkmode.css' => "body {
+        'darkmode.css' => "* {
+    scrollbar-width: thin;
+    scrollbar-color: #999 #282828;
+}
+
+*::-webkit-scrollbar {
+    width: 15px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #282828;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #999;
+    border-radius: 2px;
+}
+
+select[multiple]::-webkit-scrollbar-track {
+    border-radius: 0 6px 6px 0;
+}
+
+select[multiple]::-webkit-scrollbar-thumb {
+    border-radius: 0 4px 4px 0;
+}
+
+input[type=checkbox] {
+    position: relative;
+    cursor: pointer;
+}
+
+input[type=checkbox]:before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    top: -2px;
+    left: 0;
+    border: 1px solid #777;
+    background-color: #363636;
+}
+
+input[type=checkbox]:checked:after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border: solid #eee;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+    position: absolute;
+    top: 0px;
+    left: 4px;
+}
+
+body {
     background: #282828;
     color: #ccc;
 }
@@ -123,8 +181,8 @@ a:hover {
 }
 
 #logo {
-    background: #202020 url(images/colors/black_header.png) top left repeat-x;
-    border-bottom: 1px solid #000;
+    background: #262e39;
+    border-bottom-color: #0f1926;
 }
 
 #logo .wrapper>a>img {
@@ -184,12 +242,13 @@ table {
 }
 
 .thead {
-    background: #202121 url(images/colors/black_thead.png) top left repeat-x;
+    background: #262e39;
     border-bottom-color: #222;
     color: #bbb;
 }
 
-.thead a:link {
+.thead a:link,
+.thead a:visited {
     color: #bbb;
 }
 
@@ -228,6 +287,29 @@ table {
     border-bottom-color: #542e2e;
 }
 
+.trow_shaded {
+    background: #443030;
+    border-color: #2e2e2e #4e4e4e #4e4e4e #2e2e2e;
+}
+
+.trow_deleted, .post.deleted_post {
+    background: #221617;
+}
+
+.trow_selected, tr.trow_selected td {
+    background: #394556;
+    color: #bbb;
+    border-right-color: #435978;
+    border-bottom-color: #435978;
+}
+
+.trow_selected a:link,
+.trow_selected a:visited,
+.trow_selected a:hover,
+.trow_selected a:active {
+    color: #6fb3df;
+}
+
 .tfoot {
     border-top-color: #222;
     background: #303030;
@@ -244,10 +326,18 @@ table {
     color: #ddd;
 }
 
+.post.unapproved_post {
+    background: #443030;
+}
+
 .post .post_author {
     border-bottom-color: #181818;
     border-top-color: #333;
     background: #222;
+}
+
+.post.unapproved_post .post_author {
+    border-bottom-color: #ff0016;
 }
 
 .post .post_author div.author_avatar img {
@@ -276,12 +366,24 @@ table {
     border-bottom-color: #585858;
 }
 
+#dropzone {
+    border-color: #777 !important;
+}
+
 textarea,
 select,
-input.textbox {
+input.textbox,
+.pmspace_container {
     background: #363636;
     color: #bfbfbf;
     border-color: #777;
+}
+
+.pmspace_used.low,
+.pmspace_used.medium,
+.pmspace_used.high {
+    border: none;
+    border-left: 1px solid #777;
 }
 
 fieldset,
@@ -310,7 +412,7 @@ blockquote cite>span {
 .postbit_buttons>a:visited,
 .postbit_buttons>a:active {
     padding: 3px 6px;
-    background: #181f3a;
+    background: #262e39;
     border: 1px solid #555;
     color: #bbb;
 }
@@ -320,14 +422,14 @@ a.button:hover,
 a.button:visited,
 a.button:active {
     border-color: #777;
-    background: #181f3a;
+    background: #262e39;
     color: #bbb;
 }
 
 button,
 input.button {
     padding: 3px 6px;
-    background: #181f3a;
+    background: #262e39;
     border-color: #777;
     color: #bbb;
 }
@@ -371,7 +473,6 @@ input.button {
 
 #footer .upper .language select,
 #footer .upper .theme select {
-
     border-color: #777;
 }
 
@@ -442,8 +543,116 @@ input.button {
 
 select.rss_forum_select {
     background: #363636;
+}
+
+div.error,
+.pm_alert {
+    color: #555;
+}
+
+.red_alert {
+    background: #121212;
+    border-color: #ff0007;
+    color: #ff0007;
+}
+
+.red_alert a:link,
+.red_alert a:visited,
+.red_alert a:hover,
+.red_alert a:active {
+    color: #ff0007;
+}
+
+.modqueue_controls {
+    border-color: #777;
+    background: #363636;
+}
+
+.modqueue_meta {
+    color: #bbb;
+}
+
+.modqueue_mass {
+    list-style: none;
+    margin: 0;
+    width: 200px;
+    padding: 0;
+}
+
+.modqueue_mass li {
+    margin-bottom: 4px;
+    padding: 0;
+}
+
+.modqueue_mass li a {
+    display: block;
+    padding: 4px;
+    border: none;
+}
+
+.modqueue_mass li a:hover {
+    background: none;
+    border: none;
 }",
         'darkmode_auto.css' => "@media (prefers-color-scheme: dark) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #999 #282828;
+    }
+
+    *::-webkit-scrollbar {
+        width: 15px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: #282828;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: #999;
+        border-radius: 2px;
+    }
+
+    select[multiple]::-webkit-scrollbar-track {
+        border-radius: 0 6px 6px 0;
+    }
+
+    select[multiple]::-webkit-scrollbar-thumb {
+        border-radius: 0 4px 4px 0;
+    }
+
+    input[type=checkbox] {
+        position: relative;
+        cursor: pointer;
+    }
+
+    input[type=checkbox]:before {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 13px;
+        height: 13px;
+        top: -2px;
+        left: 0;
+        border: 1px solid #777;
+        background-color: #363636;
+    }
+
+    input[type=checkbox]:checked:after {
+        content: '';
+        display: block;
+        width: 6px;
+        height: 6px;
+        border: solid #eee;
+        border-width: 0 2px 2px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+        position: absolute;
+        top: 0px;
+        left: 4px;
+    }
+
     body {
         background: #282828;
         color: #ccc;
@@ -475,8 +684,8 @@ select.rss_forum_select {
     }
 
     #logo {
-        background: #202020 url(images/colors/black_header.png) top left repeat-x;
-        border-bottom: 1px solid #000;
+        background: #262e39;
+        border-bottom-color: #0f1926;
     }
 
     #logo .wrapper>a>img {
@@ -536,12 +745,13 @@ select.rss_forum_select {
     }
 
     .thead {
-        background: #202121 url(images/colors/black_thead.png) top left repeat-x;
+        background: #262e39;
         border-bottom-color: #222;
         color: #bbb;
     }
 
-    .thead a:link {
+    .thead a:link,
+    .thead a:visited {
         color: #bbb;
     }
 
@@ -580,6 +790,29 @@ select.rss_forum_select {
         border-bottom-color: #542e2e;
     }
 
+    .trow_shaded {
+        background: #443030;
+        border-color: #2e2e2e #4e4e4e #4e4e4e #2e2e2e;
+    }
+
+    .trow_deleted, .post.deleted_post {
+        background: #221617;
+    }
+
+    .trow_selected, tr.trow_selected td {
+        background: #394556;
+        color: #bbb;
+        border-right-color: #435978;
+        border-bottom-color: #435978;
+    }
+
+    .trow_selected a:link,
+    .trow_selected a:visited,
+    .trow_selected a:hover,
+    .trow_selected a:active {
+        color: #6fb3df;
+    }
+
     .tfoot {
         border-top-color: #222;
         background: #303030;
@@ -596,10 +829,18 @@ select.rss_forum_select {
         color: #ddd;
     }
 
+    .post.unapproved_post {
+        background: #443030;
+    }
+
     .post .post_author {
         border-bottom-color: #181818;
         border-top-color: #333;
         background: #222;
+    }
+
+    .post.unapproved_post .post_author {
+        border-bottom-color: #ff0016;
     }
 
     .post .post_author div.author_avatar img {
@@ -628,12 +869,24 @@ select.rss_forum_select {
         border-bottom-color: #585858;
     }
 
+    #dropzone {
+        border-color: #777 !important;
+    }
+
     textarea,
     select,
-    input.textbox {
+    input.textbox,
+    .pmspace_container {
         background: #363636;
         color: #bfbfbf;
         border-color: #777;
+    }
+
+    .pmspace_used.low,
+    .pmspace_used.medium,
+    .pmspace_used.high {
+        border: none;
+        border-left: 1px solid #777;
     }
 
     fieldset,
@@ -662,7 +915,7 @@ select.rss_forum_select {
     .postbit_buttons>a:visited,
     .postbit_buttons>a:active {
         padding: 3px 6px;
-        background: #181f3a;
+        background: #262e39;
         border: 1px solid #555;
         color: #bbb;
     }
@@ -672,14 +925,14 @@ select.rss_forum_select {
     a.button:visited,
     a.button:active {
         border-color: #777;
-        background: #181f3a;
+        background: #262e39;
         color: #bbb;
     }
 
     button,
     input.button {
         padding: 3px 6px;
-        background: #181f3a;
+        background: #262e39;
         border-color: #777;
         color: #bbb;
     }
@@ -723,7 +976,6 @@ select.rss_forum_select {
 
     #footer .upper .language select,
     #footer .upper .theme select {
-
         border-color: #777;
     }
 
@@ -794,6 +1046,56 @@ select.rss_forum_select {
 
     select.rss_forum_select {
         background: #363636;
+    }
+
+    div.error,
+    .pm_alert {
+        color: #555;
+    }
+
+    .red_alert {
+        background: #121212;
+        border-color: #ff0007;
+        color: #ff0007;
+    }
+
+    .red_alert a:link,
+    .red_alert a:visited,
+    .red_alert a:hover,
+    .red_alert a:active {
+        color: #ff0007;
+    }
+
+    .modqueue_controls {
+        border-color: #777;
+        background: #363636;
+    }
+
+    .modqueue_meta {
+        color: #bbb;
+    }
+
+    .modqueue_mass {
+        list-style: none;
+        margin: 0;
+        width: 200px;
+        padding: 0;
+    }
+
+    .modqueue_mass li {
+        margin-bottom: 4px;
+        padding: 0;
+    }
+
+    .modqueue_mass li a {
+        display: block;
+        padding: 4px;
+        border: none;
+    }
+
+    .modqueue_mass li a:hover {
+        background: none;
+        border: none;
     }
 }"
     );
