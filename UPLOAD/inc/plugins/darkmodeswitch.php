@@ -390,10 +390,15 @@ input.button {
     color: #999;
 }
 
-.select2-container .select2-choice {
+.select2-container .select2-choice,
+.select2-container-multi .select2-choices{
     border-color: #666 !important;
     background-color: #363636 !important;
     background-image: none !important;
+    color: #bbb !important;
+}
+
+.select2-container-multi .select2-choices .select2-search-field input {
     color: #bbb !important;
 }
 
@@ -737,10 +742,15 @@ select.rss_forum_select {
         color: #999;
     }
 
-    .select2-container .select2-choice {
+    .select2-container .select2-choice,
+    .select2-container-multi .select2-choices{
         border-color: #666 !important;
         background-color: #363636 !important;
         background-image: none !important;
+        color: #bbb !important;
+    }
+
+    .select2-container-multi .select2-choices .select2-search-field input {
         color: #bbb !important;
     }
 
