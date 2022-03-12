@@ -129,7 +129,7 @@ input[type=checkbox]:before {
     position: absolute;
     width: 13px;
     height: 13px;
-    top: -2px;
+    top: 0;
     left: 0;
     border: 1px solid #777;
     background-color: #363636;
@@ -146,7 +146,7 @@ input[type=checkbox]:checked:after {
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
     position: absolute;
-    top: 0px;
+    top: 2px;
     left: 4px;
 }
 
@@ -632,7 +632,7 @@ div.error,
         position: absolute;
         width: 13px;
         height: 13px;
-        top: -2px;
+        top: 0;
         left: 0;
         border: 1px solid #777;
         background-color: #363636;
@@ -649,7 +649,7 @@ div.error,
         -ms-transform: rotate(45deg);
         transform: rotate(45deg);
         position: absolute;
-        top: 0px;
+        top: 2px;
         left: 4px;
     }
 
