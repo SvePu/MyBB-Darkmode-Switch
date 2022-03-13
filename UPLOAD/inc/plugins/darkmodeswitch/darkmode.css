@@ -16,6 +16,10 @@
     border-radius: 2px;
 }
 
+img {
+    filter: brightness(75%);
+}
+
 select[multiple]::-webkit-scrollbar-track {
     border-radius: 0 6px 6px 0;
 }
@@ -30,7 +34,7 @@ input[type=checkbox] {
 }
 
 input[type=checkbox]:before {
-    content: '';
+    content: "";
     display: block;
     position: absolute;
     width: 13px;
@@ -42,7 +46,7 @@ input[type=checkbox]:before {
 }
 
 input[type=checkbox]:checked:after {
-    content: '';
+    content: "";
     display: block;
     width: 5px;
     height: 8px;
@@ -93,7 +97,6 @@ a:hover {
 
 #logo .wrapper>a>img {
     content: url(images/logo_white.png);
-    filter: brightness(80%);
 }
 
 #header ul.menu li a {
