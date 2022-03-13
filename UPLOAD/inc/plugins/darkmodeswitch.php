@@ -280,12 +280,8 @@ function darkmodeswitch_settings()
 
 function darkmodeswitch_settings_peekers(&$peekers)
 {
-    $new_peekers = array(
-        'new Peeker($(".setting_darkmodeselector"), $("#row_setting_autodarkmodeguests"), 1, true)',
-        'new Peeker($(".setting_darkmodeselectoronreg"), $("#row_setting_default_darkmode"), 1, true)'
-    );
-
-    $peekers = array_merge($peekers, $new_peekers);
+    $peekers[] .= 'new Peeker($(".setting_darkmodeselector"), $("#row_setting_autodarkmodeguests"), 1, true)';
+    $peekers[] .= 'new Peeker($(".setting_darkmodeselectoronreg"), $("#row_setting_default_darkmode"), 1, true)';
 }
 
 function darkmodeswitch_usercp_options()
