@@ -89,16 +89,10 @@ function darkmodeswitch_install()
     }
 
     /** Add Stylesheets */
-    $darkmode_stylesheet = @file_get_contents(__DIR__ . "/darkmodeswitch/darkmode.css");
-    if ($darkmode_stylesheet)
+    $stylesheetarray = darkmodeswitch_build_stylesheets();
+    if (isset($stylesheetarray) && is_array($stylesheetarray) && !empty($stylesheetarray))
     {
         $tid = 1;
-        $stylesheetarray = array(
-            'darkmode.css' => $darkmode_stylesheet,
-            'darkmode_auto.css' => "@media (prefers-color-scheme: dark) {
-{$darkmode_stylesheet}
-}"
-        );
 
         foreach ($stylesheetarray as $name => $styles)
         {
@@ -128,7 +122,7 @@ function darkmodeswitch_install()
             update_theme_stylesheet_list($tid, false, true);
         }
 
-        unset($darkmode_stylesheet);
+        unset($stylesheetarray);
     }
 
     /** Add Settings */
@@ -337,4 +331,32 @@ function darkmodeswitch_global()
         global $stylesheets;
         $stylesheets .= "<link type=\"text/css\" rel=\"stylesheet\" href=\"{$dm_stylesheet_url}\" />\n";
     }
+}
+
+function darkmodeswitch_build_stylesheets()
+{
+    $stylesheet = @file_get_contents(__DIR__ . "/darkmodeswitch/darkmode.css");
+    if (!$stylesheet)
+    {
+        return false;
+    }
+
+    $stylesheet = trim($stylesheet);
+
+    $stylesheets = array();
+    $stylesheets['darkmode.css'] = $stylesheet;
+
+    $stylesheet = explode("\n", $stylesheet);
+
+    $stylesheet_auto = "@media (prefers-color-scheme: dark) {";
+    $stylesheet_auto .= "\n";
+    foreach ($stylesheet as $line_num => $line)
+    {
+        $stylesheet_auto .= "\t" . $line . "\n";
+    }
+    $stylesheet_auto .= "}";
+
+    $stylesheets['darkmode_auto.css'] = $stylesheet_auto;
+
+    return $stylesheets;
 }
