@@ -290,6 +290,12 @@ input.textbox,
     border-color: #777;
 }
 
+input.valid,
+textarea.valid,
+select.valid {
+    border-color: #0c0 !important;
+}
+
 .pmspace_used.low,
 .pmspace_used.medium,
 .pmspace_used.high {

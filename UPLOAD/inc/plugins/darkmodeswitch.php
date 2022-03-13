@@ -19,6 +19,11 @@ if (defined('THIS_SCRIPT'))
     {
         $templatelist .= 'usercp_options_darkmodeswitch';
     }
+
+    if (THIS_SCRIPT == 'member.php')
+    {
+        $templatelist .= 'member_register_darkmodeswitch';
+    }
 }
 
 if (defined('IN_ADMINCP'))
@@ -28,7 +33,9 @@ if (defined('IN_ADMINCP'))
 else
 {
     $plugins->add_hook('usercp_options_end', 'darkmodeswitch_usercp_options');
+    $plugins->add_hook('member_register_end', 'darkmodeswitch_member_register');
     $plugins->add_hook('usercp_do_options_end', 'darkmodeswitch_usercp_do_options');
+    $plugins->add_hook('member_do_register_end', 'darkmodeswitch_member_do_register');
     $plugins->add_hook('global_intermediate', 'darkmodeswitch_global');
 }
 
@@ -72,7 +79,25 @@ function darkmodeswitch_install()
         <option value="0" {$dm_disabled_selected}>{$lang->darkmode_disabled}</option>
     </select>
 </td>
-</tr>'
+</tr>',
+        'member_register_darkmodeswitch' => '<br />
+<fieldset class="trow2">
+<legend><strong><label for="darkmode">{$lang->darkmode}</label></strong></legend>
+<table cellspacing="0" cellpadding="{$theme[\'tablespace\']}" width="100%">
+<tr>
+<td colspan="2"><span class="smalltext">{$lang->darkmode_desc}</span></td>
+</tr>
+<tr>
+<td>
+<select name="darkmode"  id="darkmode">
+    <option value="2" {$dm_auto_selected}>{$lang->darkmode_auto}</option>
+    <option value="1" {$dm_enabled_selected}>{$lang->darkmode_enabled}</option>
+    <option value="0" {$dm_disabled_selected}>{$lang->darkmode_disabled}</option>
+</select>
+</td>
+</tr>
+</table>
+</fieldset>'
     );
 
     foreach ($templatearray as $name => $template)
@@ -126,39 +151,55 @@ function darkmodeswitch_install()
     }
 
     /** Add Settings */
-    $query = $db->simple_select('settinggroups', 'gid', "name='general'");
-    $gid = (int)$db->fetch_field($query, 'gid');
-
-    $query = $db->simple_select('settings', 'COUNT(*) AS disporder', "gid='{$gid}'");
-    $disporder = (int)$db->fetch_field($query, 'disporder');
-
-    $settings = array(
-        'darkmodeselector' => array(
-            'optionscode' => 'yesno',
-            'value' => 1
+    $multisettings = array(
+        'general' => array(
+            'darkmodeselector' => array(
+                'optionscode' => 'yesno',
+                'value' => 1
+            ),
+            'autodarkmodeguests' => array(
+                'optionscode' => 'yesno',
+                'value' => 1,
+            )
         ),
-        'autodarkmodeguests' => array(
-            'optionscode' => 'yesno',
-            'value' => 1,
+        'member' => array(
+            'darkmodeselectoronreg' => array(
+                'optionscode' => 'yesno',
+                'value' => 1
+            ),
+            'default_darkmode' => array(
+                'optionscode' => "select\n2=" . $db->escape_string($lang->setting_default_darkmode_2) . "\n1=" . $db->escape_string($lang->setting_default_darkmode_1) . "\n0=" . $db->escape_string($lang->setting_default_darkmode_0),
+                'value' => 2,
+            )
         )
     );
 
-    ++$disporder;
-
-    foreach ($settings as $key => $setting)
+    foreach ($multisettings as $settingsname => $settings)
     {
-        $setting['name'] = $db->escape_string($key);
+        $query = $db->simple_select('settinggroups', 'gid', "name='" . $settingsname . "'");
+        $gid = (int)$db->fetch_field($query, 'gid');
 
-        $lang_var_title = "setting_{$key}";
-        $lang_var_description = "setting_{$key}_desc";
-
-        $setting['title'] = $db->escape_string($lang->{$lang_var_title});
-        $setting['description'] = $db->escape_string($lang->{$lang_var_description});
-        $setting['disporder'] = $disporder;
-        $setting['gid'] = $gid;
-
-        $db->insert_query('settings', $setting);
+        $query = $db->simple_select('settings', 'COUNT(*) AS disporder', "gid='{$gid}'");
+        $disporder = (int)$db->fetch_field($query, 'disporder');
         ++$disporder;
+
+        foreach ($settings as $key => $setting)
+        {
+            $setting['name'] = $db->escape_string($key);
+
+            $lang_var_title = "setting_{$key}";
+            $lang_var_description = "setting_{$key}_desc";
+
+            $setting['title'] = $db->escape_string($lang->{$lang_var_title});
+            $setting['description'] = $db->escape_string($lang->{$lang_var_description});
+            $setting['disporder'] = $disporder;
+            $setting['gid'] = $gid;
+
+            $db->insert_query('settings', $setting);
+            ++$disporder;
+        }
+
+        unset($gid, $disporder);
     }
 
     rebuild_settings();
@@ -186,9 +227,9 @@ function darkmodeswitch_uninstall()
         $page->output_confirm_action('index.php?module=config-plugins&action=deactivate&uninstall=1&plugin=darkmodeswitch', $lang->darkmodeswitch_uninstall_message, $lang->darkmodeswitch_uninstall);
     }
 
-    $db->delete_query('templates', "title IN ('usercp_options_darkmodeswitch')");
+    $db->delete_query('templates', "title IN ('usercp_options_darkmodeswitch', 'member_register_darkmodeswitch')");
 
-    $db->delete_query("settings", "name IN ('darkmodeselector', 'autodarkmodeguests')");
+    $db->delete_query("settings", "name IN ('darkmodeselector', 'autodarkmodeguests', 'darkmodeselectoronreg', 'default_darkmode')");
     rebuild_settings();
 
     if (!isset($mybb->input['no']))
@@ -216,6 +257,7 @@ function darkmodeswitch_activate()
 {
     require_once MYBB_ROOT . 'inc/adminfunctions_templates.php';
     find_replace_templatesets('usercp_options', '#' . preg_quote('{$board_language}') . '#', "{\$board_darkmode}\n{\$board_language}");
+    find_replace_templatesets('member_register', '#' . preg_quote('{$boardlanguage}') . '#', "{\$boardlanguage}\n{\$boarddarkmode}");
     find_replace_templatesets('codebuttons', '#' . preg_quote('<script type="text/javascript">') . '#', "{\$theme['iconsscript']}\n<script type=\"text/javascript\">");
     find_replace_templatesets('codebuttons', '#' . preg_quote('format: "bbcode",') . '#', "format: \"bbcode\",{\$theme['icons']}");
 }
@@ -224,6 +266,7 @@ function darkmodeswitch_deactivate()
 {
     require MYBB_ROOT . '/inc/adminfunctions_templates.php';
     find_replace_templatesets('usercp_options', '#' . preg_quote("{\$board_darkmode}\n") . '#', '');
+    find_replace_templatesets('member_register', '#' . preg_quote("\n{\$boarddarkmode}") . '#', '');
     find_replace_templatesets('codebuttons', '#' . preg_quote("{\$theme['iconsscript']}\n") . '#', '');
     find_replace_templatesets('codebuttons', '#' . preg_quote("{\$theme['icons']}") . '#', '');
 }
@@ -267,13 +310,69 @@ function darkmodeswitch_usercp_options()
 
 function darkmodeswitch_usercp_do_options()
 {
-    global $db, $mybb, $user, $config, $theme;
+    global $mybb;
+
+    if ($mybb->settings['darkmodeselector'] != 1)
+    {
+        return;
+    }
+
+    global $db, $user;
 
     $update_array = array(
         'darkmode' => $mybb->get_input('darkmode', MyBB::INPUT_INT)
     );
 
     $db->update_query("users", $update_array, "uid = '" . $user['uid'] . "'");
+}
+
+function darkmodeswitch_member_register()
+{
+    global $mybb, $boarddarkmode;
+
+    $boarddarkmode = '';
+
+    if ($mybb->settings['darkmodeselector'] != 1 || $mybb->settings['darkmodeselectoronreg'] != 1)
+    {
+        return;
+    }
+
+    global $lang, $templates, $theme;
+    $lang->load('darkmodeswitch');
+
+    $dm_auto_selected = $dm_enabled_selected = $dm_disabled_selected = '';
+    if (isset($mybb->settings['default_darkmode']) && $mybb->settings['default_darkmode'] == 2)
+    {
+        $dm_auto_selected = "selected=\"selected\"";
+    }
+    elseif (isset($mybb->settings['default_darkmode']) && $mybb->settings['default_darkmode'] == 1)
+    {
+        $dm_enabled_selected = "selected=\"selected\"";
+    }
+    else
+    {
+        $dm_disabled_selected = "selected=\"selected\"";
+    }
+
+    eval("\$boarddarkmode = \"" . $templates->get("member_register_darkmodeswitch") . "\";");
+}
+
+function darkmodeswitch_member_do_register()
+{
+    global $mybb;
+
+    if ($mybb->settings['darkmodeselector'] != 1 || $mybb->settings['darkmodeselectoronreg'] != 1)
+    {
+        return;
+    }
+
+    global $db, $user_info;
+
+    $update_array = array(
+        'darkmode' => $mybb->get_input('darkmode', MyBB::INPUT_INT)
+    );
+
+    $db->update_query("users", $update_array, "uid = '" . $user_info['uid'] . "'");
 }
 
 function darkmodeswitch_global()
