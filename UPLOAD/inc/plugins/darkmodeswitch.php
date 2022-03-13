@@ -29,6 +29,7 @@ if (defined('THIS_SCRIPT'))
 if (defined('IN_ADMINCP'))
 {
     $plugins->add_hook('admin_config_settings_begin', 'darkmodeswitch_settings');
+    $plugins->add_hook('admin_settings_print_peekers', 'darkmodeswitch_settings_peekers');
 }
 else
 {
@@ -275,6 +276,16 @@ function darkmodeswitch_settings()
 {
     global $lang;
     $lang->load('darkmodeswitch', true);
+}
+
+function darkmodeswitch_settings_peekers(&$peekers)
+{
+    $new_peekers = array(
+        'new Peeker($(".setting_darkmodeselector"), $("#row_setting_autodarkmodeguests"), 1, true)',
+        'new Peeker($(".setting_darkmodeselectoronreg"), $("#row_setting_default_darkmode"), 1, true)'
+    );
+
+    $peekers = array_merge($peekers, $new_peekers);
 }
 
 function darkmodeswitch_usercp_options()
