@@ -17,7 +17,7 @@
 }
 
 img {
-    filter: brightness(75%);
+    filter: brightness(80%);
 }
 
 select[multiple]::-webkit-scrollbar-track {
@@ -104,7 +104,7 @@ a:hover {
 }
 
 #panel .upper {
-    background: #0f0f0f url(images/tcat.png) repeat-x;
+    background: #1f1f1f;
     color: #ccc;
     border-top-color: #444;
     border-bottom-color: #444;
@@ -153,17 +153,17 @@ table {
 .thead {
     background: #262e39;
     border-bottom-color: #222;
-    color: #bbb;
+    color: #ccc;
 }
 
 .thead a:link,
 .thead a:visited {
-    color: #bbb;
+    color: #ccc;
 }
 
 .tcat {
     background: #303030;
-    color: #ccc;
+    color: #ddd;
     border-top-color: #444;
     border-bottom-color: #555;
 }
@@ -172,7 +172,7 @@ table {
 .tcat a:visited,
 .tcat a:hover,
 .tcat a:active {
-    color: #ccc;
+    color: #ddd;
 }
 
 .thead input.textbox,
