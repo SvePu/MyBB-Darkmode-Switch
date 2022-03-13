@@ -194,13 +194,14 @@ function darkmodeswitch_uninstall()
     if (!isset($mybb->input['no']))
     {
         /** Remove Stylesheet */
-        require_once MYBB_ADMIN_DIR . "inc/functions_themes.php";
+        require_once MYBB_ROOT . $mybb->config['admin_dir'] . '/inc/functions_themes.php';
 
         $db->delete_query("themestylesheets", "name LIKE ('darkmode%')");
 
         $query = $db->simple_select("themes", "tid");
         while ($theme = $db->fetch_array($query))
         {
+            darkmodeswitch_remove_stylesheets($theme['tid']);
             update_theme_stylesheet_list($theme['tid']);
         }
 
@@ -350,13 +351,36 @@ function darkmodeswitch_build_stylesheets()
 
     $stylesheet_auto = "@media (prefers-color-scheme: dark) {";
     $stylesheet_auto .= "\n";
-    foreach ($stylesheet as $line_num => $line)
+    foreach ($stylesheet as $line_key => $line_value)
     {
-        $stylesheet_auto .= "\t" . $line . "\n";
+        $stylesheet_auto .= "\t" . $line_value . "\n";
     }
     $stylesheet_auto .= "}";
 
     $stylesheets['darkmode_auto.css'] = $stylesheet_auto;
 
     return $stylesheets;
+}
+
+function darkmodeswitch_remove_stylesheets(int $tid)
+{
+    if (!$tid)
+    {
+        return false;
+    }
+
+    $files = glob(MYBB_ROOT . "cache/themes/theme{$tid}/darkmod*.css");
+
+    if (is_array($files) && !empty($files))
+    {
+        foreach ($files as $file)
+        {
+            if (@file_exists($file))
+            {
+                @unlink($file);
+            }
+        }
+    }
+
+    return true;
 }
