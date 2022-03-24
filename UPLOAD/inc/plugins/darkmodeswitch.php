@@ -486,7 +486,8 @@ function darkmodeswitch_remove_stylesheets(int $tid)
                 @unlink($file);
             }
         }
+        return true;
     }
 
-    return true;
+    return false;
 }
