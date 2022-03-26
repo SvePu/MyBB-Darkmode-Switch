@@ -1,6 +1,7 @@
 * text=auto eol=lf
 
 /.github/ export-ignore
+/screenshots/ export-ignore
 .gitattributes export-ignore
 /README.md export-ignore
 /LICENSE export-ignore
