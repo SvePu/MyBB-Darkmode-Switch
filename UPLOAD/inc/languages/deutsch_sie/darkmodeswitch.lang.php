@@ -11,7 +11,7 @@ $l['setting_autodarkmodeguests'] = "Automatischer DarkMode für Gäste";
 $l['setting_autodarkmodeguests_desc'] = "Soll der automatische DarkMode für den Besuch von Gästen aktiviert werden?";
 
 $l['setting_darkmodeselectoronreg'] = "Dark-Mode Auswahlbox bei Registrierung anzeigen?";
-$l['setting_darkmodeselectoronreg_desc'] = "Soll die Dark Mode Auswahlbox bei der Registrierung neuer Mitglieder angezeigt werden? Wähle \"JA\" zum Anzeigen der Auswahlbox!";
+$l['setting_darkmodeselectoronreg_desc'] = "Soll die Dark Mode Auswahlbox bei der Registrierung neuer Mitglieder angezeigt werden? Wählen Sie \"JA\" zum Anzeigen der Auswahlbox!";
 
 $l['setting_default_darkmode'] = "Standardeinstellung der Dark-Mode Auswahlbox";
 $l['setting_default_darkmode_desc'] = "Wählen Sie die Standardeinstellung des Dark-Mode, der bei der Registrierung neuer Mitglieder gesetzt werden soll. (Standard: automatische Erkennung)";
