@@ -30,6 +30,8 @@ if (defined('IN_ADMINCP'))
 {
     $plugins->add_hook('admin_config_settings_begin', 'darkmodeswitch_settings');
     $plugins->add_hook('admin_settings_print_peekers', 'darkmodeswitch_settings_peekers');
+    $plugins->add_hook('admin_style_themes_edit_stylesheet_simple_commit', 'darkmodeswitch_update_stylesheet_simple');
+    $plugins->add_hook('admin_style_themes_edit_stylesheet_advanced_commit', 'darkmodeswitch_update_stylesheet_advanced');
 }
 else
 {
@@ -59,7 +61,7 @@ function darkmodeswitch_info()
 
 function darkmodeswitch_install()
 {
-    global $db, $mybb;
+    global $db, $mybb, $lang;
 
     /** Add DB Column */
     if (!$db->field_exists("darkmode", "users"))
@@ -115,40 +117,35 @@ function darkmodeswitch_install()
     }
 
     /** Add Stylesheets */
-    $stylesheetarray = darkmodeswitch_build_stylesheets();
-    if (isset($stylesheetarray) && is_array($stylesheetarray) && !empty($stylesheetarray))
+    $tid = 1;
+    $name = 'darkmode.css';
+    $styles = @file_get_contents(__DIR__ . "/darkmodeswitch/{$name}");
+
+    $query = $db->simple_select('themestylesheets', 'sid', "name='{$name}' AND tid='{$tid}'");
+    if (!$db->fetch_field($query, 'sid') && isset($styles) && !empty($styles))
     {
-        $tid = 1;
+        $styles = trim($styles);
 
-        foreach ($stylesheetarray as $name => $styles)
+        $stylesheet = array(
+            'name' => $db->escape_string($name),
+            'tid' => (int)$tid,
+            'attachedto' => 'darkmode.php',
+            'stylesheet' => $styles,
+            'cachefile' => $db->escape_string(str_replace('/', '', $name)),
+            'lastmodified' => TIME_NOW
+        );
+
+        $sid = $db->insert_query("themestylesheets", $stylesheet);
+
+        require_once MYBB_ROOT . $mybb->config['admin_dir'] . '/inc/functions_themes.php';
+        if (!cache_stylesheet($stylesheet['tid'], $stylesheet['cachefile'], $stylesheet['stylesheet']))
         {
-            $query = $db->simple_select('themestylesheets', 'sid', "name='{$name}' AND tid='{$tid}'");
-            if ($db->fetch_field($query, 'sid'))
-            {
-                continue;
-            }
-
-            $stylesheet = array(
-                'name' => $db->escape_string($name),
-                'tid' => (int)$tid,
-                'attachedto' => 'darkmode.php',
-                'stylesheet' => $styles,
-                'cachefile' => $db->escape_string(str_replace('/', '', $name)),
-                'lastmodified' => TIME_NOW
-            );
-
-            $sid = $db->insert_query("themestylesheets", $stylesheet);
-
-            require_once MYBB_ROOT . $mybb->config['admin_dir'] . '/inc/functions_themes.php';
-            if (!cache_stylesheet($stylesheet['tid'], $stylesheet['cachefile'], $stylesheet['stylesheet']))
-            {
-                $db->update_query("themestylesheets", array('cachefile' => "css.php?stylesheet={$sid}"), "sid='{$sid}'", 1);
-            }
-
-            update_theme_stylesheet_list($tid, false, true);
+            $db->update_query("themestylesheets", array('cachefile' => "css.php?stylesheet={$sid}"), "sid='{$sid}'", 1);
         }
 
-        unset($stylesheetarray);
+        darkmodeswitch_create_auto_stylesheet($tid, $styles);
+
+        update_theme_stylesheet_list($tid, false, true);
     }
 
     /** Add Settings */
@@ -440,19 +437,54 @@ function darkmodeswitch_global()
     }
 }
 
-function darkmodeswitch_build_stylesheets()
+function darkmodeswitch_update_stylesheet_simple()
 {
-    $stylesheet = @file_get_contents(__DIR__ . "/darkmodeswitch/darkmode.css");
-    if (!$stylesheet)
+    global $theme, $new_stylesheet, $stylesheet;
+
+    $name = 'darkmode.css';
+    if ($stylesheet['name'] != $name)
     {
         return false;
     }
 
-    $stylesheet = trim($stylesheet);
+    $tid = $theme['tid'];
+    $css = $new_stylesheet;
 
-    $stylesheets = array();
-    $stylesheets['darkmode.css'] = $stylesheet;
+    darkmodeswitch_create_auto_stylesheet($tid, $css);
+}
 
+function darkmodeswitch_update_stylesheet_advanced()
+{
+    global $theme, $mybb, $stylesheet;
+
+    $name = 'darkmode.css';
+    if ($stylesheet['name'] != $name)
+    {
+        return false;
+    }
+
+    $tid = $theme['tid'];
+    $css = $mybb->input['stylesheet'];
+
+    darkmodeswitch_create_auto_stylesheet($tid, $css);
+}
+
+function darkmodeswitch_create_auto_stylesheet(int $tid, $css = "")
+{
+    if (empty($css))
+    {
+        return false;
+    }
+
+    if (!$tid)
+    {
+        $tid = 1;
+    }
+
+    global $mybb;
+    require_once MYBB_ROOT . $mybb->config['admin_dir'] . '/inc/functions_themes.php';
+
+    $stylesheet = trim($css);
     $stylesheet = explode("\n", $stylesheet);
 
     $stylesheet_auto = "@media (prefers-color-scheme: dark) {";
@@ -463,9 +495,10 @@ function darkmodeswitch_build_stylesheets()
     }
     $stylesheet_auto .= "}";
 
-    $stylesheets['darkmode_auto.css'] = $stylesheet_auto;
+    cache_stylesheet($tid, 'darkmode_auto.css', $stylesheet_auto);
+    unset($stylesheet, $stylesheet_auto);
 
-    return $stylesheets;
+    return true;
 }
 
 function darkmodeswitch_remove_stylesheets(int $tid)
@@ -486,8 +519,7 @@ function darkmodeswitch_remove_stylesheets(int $tid)
                 @unlink($file);
             }
         }
-        return true;
     }
 
-    return false;
+    return true;
 }
