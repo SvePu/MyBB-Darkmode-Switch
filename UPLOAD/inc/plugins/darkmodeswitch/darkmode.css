@@ -274,7 +274,8 @@ tr.trow_selected td {
 
 .post_controls {
     background: #282828;
-    border-bottom-color: #585858;
+    border-bottom-color: #3f3f3f;
+    border-top: 1px solid #3f3f3f;
 }
 
 #dropzone {
@@ -322,6 +323,10 @@ blockquote cite,
 
 blockquote cite>span {
     color: #ccc;
+}
+
+.phpcodeblock code{
+    filter: invert(1);
 }
 
 .postbit_buttons>a:link,
