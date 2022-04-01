@@ -1,5 +1,5 @@
 # MyBB-Darkmode-Switch
-MyBB 1.8 plugin to include a setting into UserCP to switch dark mode CSS files in forum
+MyBB 1.8 plugin to include options to toggle dark mode in forum view.
 
 --------------------------------
 
@@ -7,14 +7,14 @@ MyBB 1.8 plugin to include a setting into UserCP to switch dark mode CSS files i
 * unzip package
 * copy content from "UPLOAD" folder to the forum root on server
 * install & activate the plugn from ACP
-* edit your darkmode.css and darkmode_auto-css files
+* edit your theme darkmode.css file as you like
 
 **Full Update:**
 * uninstall plugin from ACP
 * unzip new package
 * copy content from "UPLOAD" folder to the forum root on server
 * install & activate the plugn from ACP
-* edit your darkmode.css and darkmode_auto-css files
+* edit your theme darkmode.css file as you like
 
 **Simple Update:**
 * unzip new package
