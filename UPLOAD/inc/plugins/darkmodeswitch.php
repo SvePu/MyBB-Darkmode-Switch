@@ -114,6 +114,7 @@ function darkmodeswitch_install()
         );
 
         $db->insert_query('templates', $template);
+        unset($template);
     }
 
     /** Add Stylesheets */
