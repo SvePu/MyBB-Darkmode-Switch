@@ -103,11 +103,11 @@ function darkmodeswitch_install()
 </fieldset>'
     );
 
-    foreach ($templatearray as $name => $template)
+    foreach ($templatearray as $name => $code)
     {
         $template = array(
             'title' => $db->escape_string($name),
-            'template' => $db->escape_string($template),
+            'template' => $db->escape_string($code),
             'version' => $mybb->version_code,
             'sid' => -2,
             'dateline' => TIME_NOW
